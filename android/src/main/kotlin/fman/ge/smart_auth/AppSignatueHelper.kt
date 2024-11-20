@@ -25,32 +25,22 @@ class AppSignatureHelper(context: Context) : ContextWrapper(context) {
     }
 
     @SuppressLint("PackageManagerGetSignatures")
-    fun getAppSignatures(): ArrayList<String> {
-        val appCodes = ArrayList<String>()
+    fun getAppSignatures(): List<String> {
         return try {
             val packageName = packageName
             val packageManager = packageManager
 
-            val signatures: Array<Signature> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                val signingInfo = packageManager.getPackageInfo(
-                    packageName,
-                    PackageManager.GET_SIGNING_CERTIFICATES
-                ).signingInfo
-
-                if (signingInfo != null && signingInfo.apkContentsSigners != null) {
-                    signingInfo.apkContentsSigners
-                } else {
-                    emptyArray()
-                }
+            val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+                    .signingInfo?.apkContentsSigners?.clone() ?: emptyArray()
             } else {
                 packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
             }
-            signatures
-                    .mapNotNull { hash(packageName, it.toCharsString()) }.mapTo(appCodes) { it }
-            return appCodes
+
+            signatures.mapNotNull { hash(packageName, it.toCharsString()) }
         } catch (e: PackageManager.NameNotFoundException) {
             Log.e(TAG, "Unable to find package to obtain hash.", e)
-            ArrayList()
+            emptyList()
         }
     }
 
