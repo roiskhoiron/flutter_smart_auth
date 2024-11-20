@@ -37,7 +37,7 @@ class AppSignatureHelper(context: Context) : ContextWrapper(context) {
                     PackageManager.GET_SIGNING_CERTIFICATES
                 ).signingInfo
 
-                (signingInfo?.apkContentsSigners ?: emptyArray()) as Array<Signature> // Explicit cast
+                signingInfo?.apkContentsSigners?.let { it as Array<Signature> } ?: emptyArray() // Using let for safe access
             } else {
                 packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
             }
