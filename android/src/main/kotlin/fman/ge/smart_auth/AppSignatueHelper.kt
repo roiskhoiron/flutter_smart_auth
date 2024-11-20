@@ -37,7 +37,16 @@ class AppSignatureHelper(context: Context) : ContextWrapper(context) {
                 packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
             }
 
-            signatures.mapNotNull { hash(packageName, it.toCharsString()) }
+            signatures.mapNotNull { signature ->
+                val hashResult = hash(packageName, signature.toCharsString())
+                if (hashResult != null) {
+                    hashResult
+                } else {
+                    // Handle null hash result, e.g., log a warning or return a default value
+                    Log.w(TAG, "Hash result is null for signature: ${signature.toCharsString()}")
+                    null // or some default value
+                }
+            }
         } catch (e: PackageManager.NameNotFoundException) {
             Log.e(TAG, "Unable to find package to obtain hash.", e)
             emptyList()
