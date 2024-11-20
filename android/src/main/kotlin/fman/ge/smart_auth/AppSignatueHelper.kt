@@ -29,15 +29,14 @@ class AppSignatureHelper(context: Context) : ContextWrapper(context) {
         return try {
             val packageName = packageName
             val packageManager = packageManager
-
-            val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val signatures: Array<Signature>? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
                     .signingInfo?.apkContentsSigners?.clone() ?: emptyArray()
             } else {
                 packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
             }
 
-            signatures.mapNotNull { signature ->
+            signatures?.mapNotNull { signature ->
                 val hashResult = hash(packageName, signature.toCharsString())
                 if (hashResult != null) {
                     hashResult
@@ -46,7 +45,7 @@ class AppSignatureHelper(context: Context) : ContextWrapper(context) {
                     Log.w(TAG, "Hash result is null for signature: ${signature.toCharsString()}")
                     null // or some default value
                 }
-            }
+            }!!
         } catch (e: PackageManager.NameNotFoundException) {
             Log.e(TAG, "Unable to find package to obtain hash.", e)
             emptyList()
