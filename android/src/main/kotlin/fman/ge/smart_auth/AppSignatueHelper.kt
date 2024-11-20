@@ -37,7 +37,7 @@ class AppSignatureHelper(context: Context) : ContextWrapper(context) {
                     PackageManager.GET_SIGNING_CERTIFICATES
                 ).signingInfo
 
-                signingInfo?.apkContentsSigners ?: emptyArray() // Perbaikan 1: Menangani null dengan Elvis operator
+                (signingInfo?.apkContentsSigners ?: emptyArray()) as Array<Signature> // Explicit cast
             } else {
                 packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
             }
