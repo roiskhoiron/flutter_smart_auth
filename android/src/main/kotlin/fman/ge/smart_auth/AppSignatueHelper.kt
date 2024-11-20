@@ -37,13 +37,16 @@ class AppSignatureHelper(context: Context) : ContextWrapper(context) {
                     PackageManager.GET_SIGNING_CERTIFICATES
                 ).signingInfo
 
-                signingInfo?.apkContentsSigners ?: emptyArray() // Perbaikan 1: Menangani null dengan Elvis operator
+                if (signingInfo != null && signingInfo.apkContentsSigners != null) {
+                    signingInfo.apkContentsSigners
+                } else {
+                    emptyArray()
+                }
             } else {
                 packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
             }
-
             signatures
-                .mapNotNull { hash(packageName, it.toCharsString()) }.mapTo(appCodes) { it }
+                    .mapNotNull { hash(packageName, it.toCharsString()) }.mapTo(appCodes) { it }
             return appCodes
         } catch (e: PackageManager.NameNotFoundException) {
             Log.e(TAG, "Unable to find package to obtain hash.", e)
